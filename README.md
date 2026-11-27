@@ -1,6 +1,7 @@
 # nvim_container
 
-A Neovim container image for an air-gapped network. It is built on a connected build host and runs with no network access.
+A Neovim container image for an air-gapped network. It is built on a connected
+build host and runs with no network access.
 
 ## Build and run (ticket 01)
 
@@ -16,7 +17,8 @@ Requires Docker.
 docker build -t nvim-container:latest .
 ```
 
-The Dockerfile downloads the pinned Neovim v0.12.6 release at build time. Nothing is fetched when the container runs.
+The Dockerfile downloads the pinned Neovim v0.12.6 release at build time.
+Nothing is fetched when the container runs.
 
 ### Starting Neovim in the container
 
@@ -30,8 +32,10 @@ docker run -it --rm --network none \
 
 - `-it` gives Neovim a terminal. Without it, Neovim will not start.
 - `--network none` confirms the container works with no network.
-- `-v "$PWD":/work` mounts your current directory at `/work`. Edits are written to the host.
-- The container runs as user `dev` (uid 1000). If your host user has a different uid, files you create may have different ownership.
+- `-v "$PWD":/work` mounts your current directory at `/work`. Edits are written
+  to the host.
+- The container runs as user `dev` (uid 1000). If your host user has a different
+  uid, files you create may have different ownership.
 
 To open a specific file:
 
@@ -53,4 +57,5 @@ Copy `nvim-container.tar` to the target host, then load it:
 docker load -i nvim-container.tar
 ```
 
-After loading, follow the "Starting Neovim in the container" steps above on the target host.
+After loading, follow the "Starting Neovim in the container" steps above on the
+target host.
