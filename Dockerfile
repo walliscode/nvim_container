@@ -16,7 +16,8 @@ FROM debian:bookworm-slim
 COPY --from=fetch /opt/nvim /opt/nvim
 ENV PATH="/opt/nvim/bin:${PATH}"
 
-RUN useradd --create-home --uid 1000 --shell /bin/bash dev
+RUN useradd --create-home --uid 1000 --shell /bin/bash dev \
+ && mkdir /work && chown dev:dev /work
 COPY config/ /home/dev/.config/nvim/
 RUN chown -R dev:dev /home/dev/.config
 
