@@ -23,6 +23,11 @@ docker build -q -t "$FIXTURE_IMAGE" "$fixture/context" >/dev/null || { echo "FAI
 mkdir -p "$fixture/broken"
 printf 'FROM debian:bookworm-slim\nRUN false\n' > "$fixture/broken/Dockerfile"
 
+if [[ -n "$(git status --porcelain)" ]]; then
+  echo "FAIL: commit or stash changes before running tests (build-and-test needs a clean tree)" >&2
+  exit 1
+fi
+
 new_checks() {
   local dir="$fixture/checks-$1"
   mkdir -p "$dir"
@@ -140,6 +145,18 @@ test_build_and_test_removes_image_on_failing_build() {
   report "build-and-test writes no tags and exits non-zero when the build fails" "$ok"
 }
 
+test_build_and_test_refuses_dirty_tree() {
+  local name="$BT_BASE-dirty" dir out status ok=no probe="tests/.dirty-probe-$$"
+  dir=$(new_checks bt-dirty 'check_always_passes() { return 0; }')
+  : > "$probe"
+  out=$(build_and_test "$name" "$fixture/context" "$dir" 2>&1); status=$?
+  rm -f "$probe"
+  if [[ $status -ne 0 && "$out" == *"uncommitted"* && -z "$(docker image ls -q "$name")" ]]; then
+    ok=yes
+  fi
+  report "build-and-test refuses to tag a build from an uncommitted tree" "$ok"
+}
+
 test_passing_check_exits_zero
 test_failing_check_exits_nonzero_and_is_named
 test_checks_run_on_internal_network
@@ -149,5 +166,6 @@ test_network_removed_and_image_kept_after_run
 test_build_and_test_keeps_tags_on_pass
 test_build_and_test_removes_image_on_failing_check
 test_build_and_test_removes_image_on_failing_build
+test_build_and_test_refuses_dirty_tree
 
 exit "$failures"
