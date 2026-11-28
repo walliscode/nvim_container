@@ -10,7 +10,10 @@ CANDIDATE="$NAME:candidate"
 
 VERSION=$(sed -n 's/^ARG NVIM_VERSION=//p' Dockerfile | head -n 1)
 SHA=$(git rev-parse --short HEAD) || { echo "FAIL: not a git repository" >&2; exit 1; }
-[[ -n "$(git status --porcelain)" ]] && SHA="$SHA-dirty"
+if [[ -n "$(git status --porcelain)" ]]; then
+  echo "FAIL: uncommitted changes, commit before building a tagged image" >&2
+  exit 1
+fi
 VERSIONED="$NAME:$VERSION-$SHA"
 
 remove_candidate() {

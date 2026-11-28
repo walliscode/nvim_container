@@ -64,7 +64,8 @@ flowchart TD
 ```text
 function build_and_test(name = "nvim-container", context = "."):
     CANDIDATE = name + ":candidate"
-    VERSIONED = name + ":" + nvim_version + "-" + git_sha     # "-dirty" if the tree has changes
+    fail if the git tree has uncommitted changes            # tagged builds must be reproducible
+    VERSIONED = name + ":" + nvim_version + "-" + git_sha
     build CANDIDATE from context             # fail (and remove candidate) if the build fails
     if run(image = CANDIDATE) passes:
         tag CANDIDATE as name:latest and VERSIONED

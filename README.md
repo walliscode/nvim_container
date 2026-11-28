@@ -14,6 +14,8 @@ Requires Docker.
 ./tests/build-and-test.sh
 ```
 
+It refuses to run with uncommitted changes, so every tagged image matches a commit.
+
 On pass the script tags the tested image as `nvim-container:latest` and
 `nvim-container:<nvim-version>-<git-sha>`, and prints the image and layer sizes.
 On fail it removes the image and exits non-zero, so an untested image is never
