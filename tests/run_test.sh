@@ -8,6 +8,7 @@ failures=0
 fixture=$(mktemp -d)
 FIXTURE_IMAGE="nvim-container-fixture-$$"
 BT_BASE="nvim-container-bt-$$"
+# shellcheck disable=SC2329 # invoked by the EXIT trap
 cleanup() {
   rm -rf "$fixture"
   docker image rm -f "$FIXTURE_IMAGE" >/dev/null 2>&1
