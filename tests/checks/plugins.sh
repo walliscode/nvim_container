@@ -31,6 +31,17 @@ check_telescope_is_pinned() { plugin_pinned TELESCOPE_REV telescope.nvim; }
 check_gitsigns_loads() { plugin_loads gitsigns gitsigns.nvim; }
 check_gitsigns_is_pinned() { plugin_pinned GITSIGNS_REV gitsigns.nvim; }
 
+check_git_is_installed_for_gitsigns() {
+  in_container 'command -v git' >/dev/null 2>&1 \
+    || { echo "git is not on PATH; gitsigns aborts setup without it" >&2; return 1; }
+}
+
+check_gitsigns_setup_is_silent_at_startup() {
+  local out
+  out=$(in_container "nvim --headless -c 'qa!' 2>&1") || { echo "nvim failed at startup" >&2; return 1; }
+  [[ -z "$out" ]] || { echo "startup printed errors: $out" >&2; return 1; }
+}
+
 check_only_the_six_plugins_are_vendored() {
   local expected actual
   expected=$(printf '%s\n' gitsigns.nvim nvim-cmp nvim-lspconfig nvim-treesitter plenary.nvim telescope.nvim | sort)
