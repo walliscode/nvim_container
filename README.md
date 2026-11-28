@@ -10,12 +10,19 @@ build host and runs with no network access.
 Requires Docker.
 
 ```sh
-# Build a temporary image, run every check in tests/checks/, then remove it
-./tests/run.sh
-
-# Or build it yourself
-docker build -t nvim-container:latest .
+# Build the image, run every check in tests/checks/, and keep the image only if they all pass
+./tests/build-and-test.sh
 ```
+
+It refuses to run with uncommitted changes, so every tagged image matches a commit.
+
+On pass the script tags the tested image as `nvim-container:latest` and
+`nvim-container:<nvim-version>-<git-sha>`, and prints the image and layer sizes.
+On fail it removes the image and exits non-zero, so an untested image is never
+left behind.
+
+To run only the checks against an image that already exists, use
+`NVIM_TEST_IMAGE=<tag> ./tests/run.sh`.
 
 The Dockerfile downloads the pinned Neovim v0.12.6 release at build time.
 Nothing is fetched when the container runs.

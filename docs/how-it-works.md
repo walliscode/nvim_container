@@ -59,16 +59,28 @@ flowchart TD
 
 ## Test harness
 
-`tests/run.sh` builds a temporary image, runs each check against it, then removes everything it made.
+`tests/build-and-test.sh` builds the image as a candidate, runs every check against it, then either keeps it or removes it. `tests/run.sh` runs the checks against an image it is given and never builds or deletes one.
 
 ```text
-function run(checks_dir = tests/checks, context = "."):
-    TEST_IMAGE = "nvim-container:test-" + pid
-    NETWORK    = "nvim-container-test-" + pid
+function build_and_test(name = "nvim-container", context = "."):
+    CANDIDATE = name + ":candidate"
+    fail if the git tree has uncommitted changes            # tagged builds must be reproducible
+    VERSIONED = name + ":" + nvim_version + "-" + git_sha
+    build CANDIDATE from context             # fail (and remove candidate) if the build fails
+    if run(image = CANDIDATE) passes:
+        tag CANDIDATE as name:latest and VERSIONED
+        remove CANDIDATE tag
+        print total image size and layer sizes
+        exit 0
+    else:
+        remove CANDIDATE tag                 # no passing tag is written
+        exit 1
+
+function run(image, checks_dir = tests/checks):
+    NETWORK = "nvim-container-test-" + pid
     on exit:
-        remove NETWORK and TEST_IMAGE
-    build TEST_IMAGE from context          # fail the run if the build fails
-    create NETWORK with --internal         # fail the run if it cannot be created
+        remove NETWORK
+    create NETWORK with --internal           # fail the run if it cannot be created
     failed = false
     for each file in checks_dir/*.sh:
         source file
@@ -76,7 +88,7 @@ function run(checks_dir = tests/checks, context = "."):
             if function succeeds:
                 print PASS: name
             else:
-                print FAIL: name           # to stderr
+                print FAIL: name              # to stderr
                 failed = true
             unset function
     exit non-zero if failed
@@ -84,23 +96,13 @@ function run(checks_dir = tests/checks, context = "."):
 
 ```mermaid
 flowchart TD
-    S([run.sh]) --> Build[build temporary image]
-    Build -->|fail| X1([exit 1])
-    Build --> Net[create internal network]
-    Net -->|fail| X1
-    Net --> Loop[for each checks/*.sh]
-    Loop --> Fn[for each check_* function]
-    Fn --> Run{check passes?}
-    Run -- yes --> P[print PASS]
-    Run -- no --> F[print FAIL, mark run failed]
-    P --> Next{more checks?}
-    F --> Next
-    Next -- yes --> Fn
-    Next -- no --> Done{any failed?}
-    Done -- no --> OK([exit 0])
-    Done -- yes --> Bad([exit 1])
-    OK --> Clean[remove network and image]
-    Bad --> Clean
+    S([build-and-test.sh]) --> Build[build nvim-container:candidate]
+    Build -->|fail| X1([remove candidate, exit 1])
+    Build --> Run[run.sh against candidate]
+    Run --> Done{all checks pass?}
+    Done -- yes --> Tag[tag latest and version-sha<br/>print sizes, remove candidate]
+    Tag --> OK([exit 0])
+    Done -- no --> Bad([remove candidate, exit 1])
 ```
 
 ## Checks
