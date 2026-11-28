@@ -49,6 +49,9 @@ FROM debian:bookworm-slim
 COPY --from=fetch /opt/nvim /opt/nvim
 ENV PATH="/opt/nvim/bin:${PATH}"
 
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends git \
+ && rm -rf /var/lib/apt/lists/*
 RUN useradd --create-home --uid 1000 --shell /bin/bash dev \
  && mkdir /work && chown dev:dev /work
 COPY --chown=dev:dev config/ /home/dev/.config/nvim/
