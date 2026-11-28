@@ -20,8 +20,11 @@ remove_candidate() {
 docker build -t "$CANDIDATE" "$CONTEXT" || { echo "FAIL: image build" >&2; remove_candidate; exit 1; }
 
 if NVIM_TEST_IMAGE="$CANDIDATE" NVIM_TEST_CHECKS_DIR="$CHECKS_DIR" tests/run.sh; then
-  docker tag "$CANDIDATE" "$NAME:latest"
-  docker tag "$CANDIDATE" "$VERSIONED"
+  if ! docker tag "$CANDIDATE" "$NAME:latest" || ! docker tag "$CANDIDATE" "$VERSIONED"; then
+    echo "FAIL: could not tag image" >&2
+    remove_candidate
+    exit 1
+  fi
   remove_candidate
   echo "Tagged $NAME:latest and $VERSIONED"
   echo "Total image size: $(docker image ls --format '{{.Size}}' "$NAME:latest" | head -n 1)"

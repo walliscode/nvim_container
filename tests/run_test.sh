@@ -8,7 +8,12 @@ failures=0
 fixture=$(mktemp -d)
 FIXTURE_IMAGE="nvim-container-fixture-$$"
 BT_BASE="nvim-container-bt-$$"
-trap 'rm -rf "$fixture"; docker image rm -f "$FIXTURE_IMAGE" >/dev/null 2>&1; docker image ls -q --filter "reference=$BT_BASE*" | xargs -r docker image rm -f >/dev/null 2>&1' EXIT
+cleanup() {
+  rm -rf "$fixture"
+  docker image rm -f "$FIXTURE_IMAGE" >/dev/null 2>&1
+  docker image ls -q --filter "reference=$BT_BASE*" | xargs -r docker image rm -f >/dev/null 2>&1
+}
+trap cleanup EXIT
 
 mkdir -p "$fixture/context"
 printf 'FROM debian:bookworm-slim\n' > "$fixture/context/Dockerfile"
