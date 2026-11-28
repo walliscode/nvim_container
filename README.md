@@ -10,8 +10,8 @@ build host and runs with no network access.
 Requires Docker.
 
 ```sh
-# Build a temporary image, run every check in tests/checks/, then remove it
-./tests/run.sh
+# Build the image and run the offline check
+./tests/offline_start.sh
 
 # Or build it yourself
 docker build -t nvim-container:latest .
