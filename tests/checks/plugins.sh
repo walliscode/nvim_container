@@ -36,7 +36,7 @@ check_git_is_installed_for_gitsigns() {
     || { echo "git is not on PATH; gitsigns aborts setup without it" >&2; return 1; }
 }
 
-check_gitsigns_setup_is_silent_at_startup() {
+check_startup_prints_no_errors() {
   local out
   out=$(in_container "nvim --headless -c 'qa!' 2>&1") || { echo "nvim failed at startup" >&2; return 1; }
   [[ -z "$out" ]] || { echo "startup printed errors: $out" >&2; return 1; }

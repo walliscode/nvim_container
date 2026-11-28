@@ -114,7 +114,7 @@ Each check is a function named `check_*` in `tests/checks/`. It returns 0 for pa
 | `startup.sh` | `check_nvim_starts_on_internal_network` | Neovim starts and reports v0.12.6 |
 | `plugins.sh` | `check_<plugin>_loads`, `check_<plugin>_is_pinned` (one pair per plugin) | each vendored plugin loads from `pack/vendor/start` and is pinned to a full commit in the Dockerfile |
 | `plugins.sh` | `check_only_the_six_plugins_are_vendored`, `check_no_plugin_manager_runs_at_startup` | exactly the reviewed six are vendored, and no plugin manager loads |
-| `plugins.sh` | `check_git_is_installed_for_gitsigns`, `check_gitsigns_setup_is_silent_at_startup` | git is on PATH and gitsigns setup prints nothing at startup |
+| `plugins.sh` | `check_git_is_installed_for_gitsigns`, `check_startup_prints_no_errors` | git is on PATH, and headless startup prints nothing (gitsigns aborts with a message when git is missing) |
 | `mounts.sh` | `check_work_is_writable` | the container user can write to `/work` |
 | `network.sh` | `check_internet_is_unreachable` | a public IP cannot be reached |
 
