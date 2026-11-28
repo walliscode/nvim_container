@@ -8,6 +8,22 @@ A Neovim environment packaged as a container image that runs with no internet ac
 A network with no route to the internet. The container must work fully inside it.
 _Avoid_: Offline, isolated network
 
+**Internal network**:
+The air-gapped network the container joins. Other internal hosts are reachable from it, but nothing on the internet is.
+_Avoid_: No network, offline network
+
+**Personal drive**:
+The per-user host directory mounted read-write at `/work`. It holds the user's projects and personal config, and is the only place the container can write.
+_Avoid_: Home, workspace, user volume
+
+**Core config**:
+The Neovim config and plugins baked into the image. It is read-only and cannot be changed at run time.
+_Avoid_: Default config, base config
+
+**Personal config**:
+The user's own Neovim config and plugins, kept inside the personal drive. It loads after core config and can override it.
+_Avoid_: User config, dotfiles
+
 **Build host**:
 The connected machine where the image is built and the tarball is exported.
 _Avoid_: CI, builder
