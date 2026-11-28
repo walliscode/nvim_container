@@ -20,27 +20,39 @@ docker build -t nvim-container:latest .
 The Dockerfile downloads the pinned Neovim v0.12.6 release at build time.
 Nothing is fetched when the container runs.
 
-### Starting Neovim in the container
+### Creating the internal network
 
-Run this from the project you want to edit:
+The container runs on an internal-only Docker network. It has no route to the
+internet, but other hosts on the internal network are reachable from it.
 
 ```sh
-docker run -it --rm --network none \
-  -v "$PWD":/work \
+docker network create --internal nvim-internal
+```
+
+### Starting Neovim in the container
+
+Run this with your personal drive mounted. Your drive lives at
+`user/${COMPANY_USER_NAME}` on the host:
+
+```sh
+docker run -it --rm --network nvim-internal \
+  --user "$(id -u):$(id -g)" \
+  -v "$HOME/user/${COMPANY_USER_NAME}":/work \
   nvim-container:latest
 ```
 
 - `-it` gives Neovim a terminal. Without it, Neovim will not start.
-- `--network none` confirms the container works with no network.
-- `-v "$PWD":/work` mounts your current directory at `/work`. Edits are written
-  to the host.
-- The container runs as user `dev` (uid 1000). If your host user has a different
-  uid, files you create may have different ownership.
+- `--network nvim-internal` keeps the container on the internal network.
+- `-v ...:/work` mounts your personal drive at `/work`. It is the only place the
+  container can write. Your personal config lives in `/work/.nvim/`.
+- `--user "$(id -u):$(id -g)"` makes files you create owned by your host user.
+  Without it, they are owned by uid 1000.
 
-To open a specific file:
+To open a specific file, add it after the image name:
 
 ```sh
-docker run -it --rm --network none -v "$PWD":/work nvim-container:latest src/main.c
+docker run -it --rm --network nvim-internal --user "$(id -u):$(id -g)" \
+  -v "$HOME/user/${COMPANY_USER_NAME}":/work nvim-container:latest src/main.c
 ```
 
 ### Moving the image into the air gap
